@@ -1,0 +1,83 @@
+name: crypto_wallet
+description: "A new Flutter project."
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: ">=3.0.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.8
+  flutter_secure_storage: ^9.0.0   
+  bip39: ^1.0.6                    
+  bip32: ^2.0.0                    
+  hex: ^0.2.0                       
+  web3dart: ^2.7.2                  
+  http: ^1.1.0                      
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+
+flutter:
+  uses-material-design: true
+
+
+# dependencies:
+#   flutter:
+#     sdk: flutter
+#   cupertino_icons: ^1.0.8
+#   flutter_secure_storage: ^9.0.0   # Securely store private keys
+#   bip39: ^1.0.6                    # Generate 12-word mnemonic
+#   bip32: ^2.0.0                    # Derive private keys from mnemonic
+#   hex: ^0.2.0                       # Hex encoding
+#   web3dart: ^2.7.2                  # Web3 interaction (Ethereum transactions)
+#   http: ^1.1.0                      # Updated HTTP version
+
+
+# name: crypto_wallet
+# description: "A new Flutter project."
+# publish_to: 'none' 
+# version: 1.0.0+1
+# environment:
+#   sdk: ^3.7.0
+# dependencies:
+#   flutter:
+#     sdk: flutter
+#   cupertino_icons: ^1.0.8
+# dev_dependencies:
+#   flutter_test:
+#     sdk: flutter
+#   flutter_lints: ^5.0.0
+# flutter:
+#   uses-material-design: true
+
+# name: crypto_wallet
+# description: "A new Flutter project."
+# publish_to: 'none' 
+# version: 1.0.0+1
+
+# environment:
+#   sdk: ^3.7.0
+
+# dependencies:
+#   flutter:
+#     sdk: flutter
+#   cupertino_icons: ^1.0.8
+#   flutter_secure_storage: ^9.0.0   
+#   bip39: ^1.0.6                    
+#   bip32: ^2.0.0                   
+#   hex: ^0.2.0                      
+#   web3dart: ^2.7.2                  
+#   http: 1.1.0                    
+
+# dev_dependencies:
+#   flutter_test:
+#     sdk: flutter
+#   flutter_lints: ^5.0.0
+
+# flutter:
+#   uses-material-design: true
