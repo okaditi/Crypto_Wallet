@@ -22,8 +22,8 @@ class WalletService {
       clientMeta: PeerMeta(
         name: "Crypto Wallet",
         description: "A secure crypto wallet",
-        url: "https://your-app-url.com",
-        icons: ["https://your-app-url.com/icon.png"],
+        // url: "https://your-app-url.com",
+        // icons: ["https://your-app-url.com/icon.png"],
       ),
     );
   }
