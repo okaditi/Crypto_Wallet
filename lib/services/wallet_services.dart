@@ -6,24 +6,25 @@ import 'package:http/http.dart' as http;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:walletconnect_dart/walletconnect_dart.dart';
 
+//setting up dependencies/tools we will use throughout the service!!!
 class WalletService {
-  final storage = FlutterSecureStorage();
-  final String rpcUrl = "https://sepolia.infura.io/v3/YOUR_INFURA_KEY"; // Infura API
-  late Web3Client ethClient;
-  late WalletConnect connector;
-  SessionStatus? session;
+  final storage = FlutterSecureStorage(); //saves private key on the devices
+  final String rpcUrl = "https://sepolia.infura.io/v3/YOUR_INFURA_KEY"; // Infura API- intracting w blockchain using etherum node url which in this case is infura, an ethereum provider and i fucking forgot mine so i have to ask bhaiya
+  late Web3Client ethClient; // lets us send transaction,get balance, interact with smart contracts
+  late WalletConnect connector; //connects the metamask wallet to our app
+  SessionStatus? session; //keep tracks of metamask wallet connection
 
   WalletService() {
-    ethClient = Web3Client(rpcUrl, http.Client());
+    ethClient = Web3Client(rpcUrl, http.Client()); //creating a connection w the ethereum , allows us to send transactions, check balances, interact with smart contracts
 
-    // Initialize WalletConnect
+    // Initialize WalletConnect so we can later use it to connect with meta mask
     connector = WalletConnect(
       bridge: 'https://bridge.walletconnect.org',
       clientMeta: PeerMeta(
         name: "Crypto Wallet",
         description: "A secure crypto wallet",
-        // url: "https://your-app-url.com",
-        // icons: ["https://your-app-url.com/icon.png"],
+        url: "https://example.com",
+        icons: ["https://your-app-url.com/icon.png"],
       ),
     );
   }
@@ -31,17 +32,17 @@ class WalletService {
   /// Generates a 12-word mnemonic (seed phrase)
   String generateMnemonic() {
     return bip39.generateMnemonic();
-  }
+  } //generating 12 seed phrases, here we are using the big39 package we included on the top of the code 
 
-  /// Converts mnemonic to private key (Renamed Function)
+  /// Converts seed phrases to private key 
   String derivePrivateKey(String mnemonic) {
-    final seed = bip39.mnemonicToSeed(mnemonic);
-    final root = bip32.BIP32.fromSeed(seed);
-    final child = root.derivePath("m/44'/60'/0'/0/0"); // Ethereum path
-    return HEX.encode(child.privateKey!);
+    final seed = bip39.mnemonicToSeed(mnemonic); //converts the 12 words into a binary seed
+    final root = bip32.BIP32.fromSeed(seed); //creates a root key from binary key 
+    final child = root.derivePath("m/44'/60'/0'/0/0"); //follows the path to get a unique private key 
+    return HEX.encode(child.privateKey!); //converts the private key into a readable format 
   }
 
-  /// Derives Ethereum address from private key
+  /// Derives Ethereum (public) address from private key - this address is used perform transaction
   String getEthereumAddress(String privateKey) {
     final private = EthPrivateKey.fromHex(privateKey);
     return private.address.hexEip55;
@@ -52,27 +53,38 @@ class WalletService {
     await storage.write(key: "private_key", value: privateKey);
   }
 
-  /// Retrieves private key securely (Renamed Function)
+  /// Reads the private key when needed in the future
   Future<String?> loadPrivateKey() async {
     return await storage.read(key: "private_key");
   }
 
+  
+  /// Saves the seed phrase securely
+  Future<void> saveSeedPhrase(String mnemonic) async {
+    await storage.write(key: "seed_phrase", value: mnemonic);
+  }
+
+  /// Reads the saved seed phrase when needed
+  Future<String?> loadSeedPhrase() async {
+    return await storage.read(key: "seed_phrase");
+  }
+
   /// Connects to MetaMask via WalletConnect
-  Future<void> connectMetaMask(Function(String) onConnected) async {
-    if (!connector.connected) {
+  Future<void> connectMetaMask(Function(String) onConnected) async { // input here is the ethereum address of the user's wallet 
+    if (!connector.connected) {    //checking if it is not already connected 
       try {
-        session = await connector.createSession(
-          chainId: 11155111, // Sepolia Testnet
+        session = await connector.createSession( //creating a wallet connect session to interact 
+          chainId: 11155111, // Sepolia Testnet- these already fixed 
           onDisplayUri: (uri) async {
-            print("WalletConnect URI: $uri");
+            print("WalletConnect URI: $uri"); //generates a connect walllet uri if needed - by scanning the QR code you can manually connect 
           },
         );
 
-        if (session != null) {
+        if (session != null) { // checks if session was successful or not
           String address = session!.accounts[0];
-          onConnected(address);
+          onConnected(address); //passes the user's wallet address back to the app
         }
-      } catch (e) {
+      } catch (e) { // error handling
         print("Error connecting MetaMask: $e");
       }
     }
