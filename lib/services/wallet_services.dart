@@ -1,3 +1,4 @@
+import 'hush_wallet_service.dart';
 import 'package:bip39/bip39.dart' as bip39;
 import 'package:bip32/bip32.dart' as bip32;
 import 'package:hex/hex.dart';
@@ -10,6 +11,7 @@ import 'package:walletconnect_dart/walletconnect_dart.dart';
 class WalletService {
   final storage = FlutterSecureStorage(); //saves private key on the devices
   final String rpcUrl = "https://sepolia.infura.io/v3/YOUR_INFURA_KEY"; // Infura API- intracting w blockchain using etherum node url which in this case is infura, an ethereum provider and i fucking forgot mine so i have to ask bhaiya
+  final HushWalletService hushWalletService = HushWalletService();
   late Web3Client ethClient; // lets us send transaction,get balance, interact with smart contracts
   late WalletConnect connector; //connects the metamask wallet to our app
   SessionStatus? session; //keep tracks of metamask wallet connection
@@ -27,7 +29,17 @@ class WalletService {
         icons: ["https://your-app-url.com/icon.png"],
       ),
     );
+      setupNewWallet();
   }
+
+/// Creates a new main wallet and a backup HushWallet
+  Future<void> setupNewWallet() async {
+    print("Setting up a new wallet and backup HushWallet...");
+    await hushWalletService.createWallet(isBackup: false);
+    await hushWalletService.createWallet(isBackup: true);
+  }
+
+
 
   /// Generates a 12-word mnemonic (seed phrase)
   String generateMnemonic() {
@@ -117,4 +129,30 @@ class WalletService {
 
     return await ethClient.sendTransaction(credentials, transaction);
   }
+
+  /// Self-destructs the main wallet and activates the backup HushWallet
+  Future<void> selfDestructWallet() async {
+    print("Main wallet is being destroyed...");
+    String? privateKey = await loadPrivateKey();
+    String? backupAddress = await hushWalletService.getBackupWalletAddress();
+
+    if (privateKey != null && backupAddress != null) {
+      print("Transferring funds to backup wallet before destruction...");
+      try {
+        EtherAmount balance = await getBalance(getEthereumAddress(privateKey));
+        await sendTransaction(privateKey, backupAddress, balance.getValueInUnit(EtherUnit.ether)); // Send all funds
+      } catch (e) {
+        print("Transfer failed: $e");
+      }
+    }
+
+    await storage.delete(key: "private_key");
+    await storage.delete(key: "seed_phrase");
+    print("Main wallet has been wiped.");
+    await hushWalletService.activateHushWallet();
+    print("HushWallet is now the active wallet.");
+    await setupNewWallet();
+    print("A new backup HushWallet has been created.");
+  }
+
 }
