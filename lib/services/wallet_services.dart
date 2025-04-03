@@ -1,4 +1,8 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+// ignore: unused_import
+>>>>>>> bddd3d4 (Updated UI and Wallet Screen layout)
 import 'hush_wallet_service.dart';
 =======
 import 'dart:convert';
@@ -141,6 +145,7 @@ class WalletService {
   }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
   /// Self-destructs the main wallet and activates the backup HushWallet
   Future<void> selfDestructWallet() async {
     print("Main wallet is being destroyed...");
@@ -213,3 +218,31 @@ class WalletService {
   //   throw Exception('Failed to fetch ETH price');
   // }
   // }
+=======
+/// Self-destructs the main wallet and activates the backup HushWallet
+   Future<void> selfDestructWallet() async {
+     print("Main wallet is being destroyed...");
+     String? privateKey = await loadPrivateKey();
+     String? backupAddress = await hushWalletService.getBackupWalletAddress();
+ 
+     if (privateKey != null && backupAddress != null) {
+       print("Transferring funds to backup wallet before destruction...");
+       try {
+         EtherAmount balance = await getBalance(getEthereumAddress(privateKey));
+         await sendTransaction(privateKey, backupAddress, balance.getValueInUnit(EtherUnit.ether)); // Send all funds
+       } catch (e) {
+         print("Transfer failed: $e");
+       }
+     }
+ 
+     await storage.delete(key: "private_key");
+     await storage.delete(key: "seed_phrase");
+     print("Main wallet has been wiped.");
+     await hushWalletService.activateHushWallet();
+     print("HushWallet is now the active wallet.");
+     await setupNewWallet();
+     print("A new backup HushWallet has been created.");
+   }  
+}
+
+>>>>>>> bddd3d4 (Updated UI and Wallet Screen layout)
