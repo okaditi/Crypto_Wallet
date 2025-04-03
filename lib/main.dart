@@ -1,6 +1,7 @@
 // ignore_for_file: unused_local_variable
 import 'package:flutter/material.dart';
 import 'services/wallet_services.dart';
+import 'services/hush_wallet_service.dart';
 import 'package:web3dart/web3dart.dart';
 
 void main() {
@@ -104,7 +105,7 @@ class LoginScreen extends StatelessWidget {
   }
 }
 
-// MainScreen to handle navigation
+//---------------------MainScreen to handle navigation -----------------------------
 class MainScreen extends StatefulWidget {
   final WalletService walletService;
   MainScreen({required this.walletService});
@@ -161,7 +162,7 @@ class _MainScreenState extends State<MainScreen> {
   }
 }
 
-// HomeContent
+// --------------------- HomeContent ---------------------
 class HomeContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -186,8 +187,10 @@ class HomeContent extends StatelessWidget {
   }
 }
 
-// Add SettingsScreen
+// ---------------------------- SettingsScreen ----------------------------
 class SettingsScreen extends StatelessWidget {
+  final HushWalletService hushWalletService = HushWalletService();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -223,6 +226,19 @@ class SettingsScreen extends StatelessWidget {
               trailing: Icon(Icons.arrow_forward_ios, size: 16),
               onTap: () {
                 // Handle notifications tap
+              },
+            ),
+            ListTile(
+              leading: Icon(Icons.backup_outlined),
+              title: Text('HushWallet'),
+              trailing: Icon(Icons.arrow_forward_ios, size: 16),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => HushWalletScreen(hushWalletService: hushWalletService),
+                  ),
+                );
               },
             ),
             Divider(color: Colors.grey[800]),
@@ -391,6 +407,167 @@ class _WalletScreenState extends State<WalletScreen> {
         SizedBox(height: 8),
         Text(label, style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
       ],
+    );
+  }
+}
+
+//------------------------ HushWallet Screen ------------------------
+class HushWalletScreen extends StatefulWidget {
+  final HushWalletService hushWalletService;
+  
+  HushWalletScreen({required this.hushWalletService});
+  
+  @override
+  _HushWalletScreenState createState() => _HushWalletScreenState();
+}
+
+class _HushWalletScreenState extends State<HushWalletScreen> {
+  String? currentWalletAddress;
+  String? backupWalletAddress;
+  bool isLoading = true;
+  
+  @override
+  void initState() {
+    super.initState();
+    _loadWalletAddresses();
+  }
+  
+  Future<void> _loadWalletAddresses() async {
+    setState(() {
+      isLoading = true;
+    });
+    
+    currentWalletAddress = await widget.hushWalletService.getCurrentWalletAddress();
+    backupWalletAddress = await widget.hushWalletService.getBackupWalletAddress();
+    
+    setState(() {
+      isLoading = false;
+    });
+  }
+  
+  Future<void> _triggerSelfDestruct() async {
+    final bool? confirmed = await showDialog<bool>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Self-Destruct Wallet'),
+          content: Text(
+            'This will destroy your main wallet and activate your HushWallet. '
+            'All funds will be transferred to your HushWallet before destruction. '
+            'This action cannot be undone. Are you sure you want to proceed?'
+          ),
+          actions: [
+            TextButton(
+              child: Text('Cancel'),
+              onPressed: () => Navigator.of(context).pop(false),
+            ),
+            TextButton(
+              child: Text('Proceed', style: TextStyle(color: Colors.red)),
+              onPressed: (){
+                Navigator.of(context).pop(true);
+                widget.hushWalletService.triggerSelfDestruct();
+                _loadWalletAddresses();
+              } 
+            ),
+          ],
+        );
+      },
+    );
+    
+    if (confirmed == true) {
+      await widget.hushWalletService.triggerSelfDestruct();
+      await _loadWalletAddresses();
+    }
+  }
+  
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('HushWallet'),
+        backgroundColor: Colors.black,
+        elevation: 0,
+      ),
+      backgroundColor: Colors.black,
+      body: isLoading ?
+          Center(child: CircularProgressIndicator())
+          : Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'HushWallet is a backup wallet that can be activated if your main wallet is compromised.',
+                    style: TextStyle(fontSize: 16),
+                  ),
+                  SizedBox(height: 20),
+                  Card(
+                    color: Colors.grey[900],
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Current Wallet',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          SizedBox(height: 8),
+                          Text(
+                            currentWalletAddress ?? 'Not available',
+                            style: TextStyle(fontSize: 14),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 16),
+                  Card(
+                    color: Colors.grey[900],
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Backup HushWallet',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          SizedBox(height: 8),
+                          Text(
+                            backupWalletAddress ?? 'Not available',
+                            style: TextStyle(fontSize: 14),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 30),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.red,
+                        padding: EdgeInsets.symmetric(vertical: 15),
+                      ),
+                      onPressed: _triggerSelfDestruct,
+                      child: Text(
+                        'Activate HushWallet (Self-Destruct)',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
     );
   }
 }
