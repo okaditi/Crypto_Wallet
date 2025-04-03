@@ -1,5 +1,4 @@
 // ignore_for_file: unused_local_variable
-
 import 'package:flutter/material.dart';
 import 'services/wallet_services.dart';
 import 'package:web3dart/web3dart.dart';
@@ -105,7 +104,7 @@ class LoginScreen extends StatelessWidget {
   }
 }
 
-// Add MainScreen to handle navigation
+// MainScreen to handle navigation
 class MainScreen extends StatefulWidget {
   final WalletService walletService;
   MainScreen({required this.walletService});
@@ -162,7 +161,7 @@ class _MainScreenState extends State<MainScreen> {
   }
 }
 
-// Convert HomeScreen to HomeContent
+// HomeContent
 class HomeContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -294,9 +293,14 @@ class _WalletScreenState extends State<WalletScreen> {
 
         EtherAmount ethBalance = await widget.walletService.getBalance(address);
         double ethValue = ethBalance.getValueInUnit(EtherUnit.ether);
+        double ethToUsd = await widget.walletService.getEthToUsdRate();
+        double ethUsdValue = ethValue * ethToUsd;
+
+        List<Map<String, String>> fetchedAssets = await widget.walletService.getAllAssets(address);
 
         setState(() {
           balance = ethValue.toStringAsFixed(4);
+          assets = fetchedAssets;
         });
       } else {
         setState(() => balance = 'No wallet found');
