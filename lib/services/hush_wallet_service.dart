@@ -164,8 +164,5 @@ class HushWalletService {
   Future<String?> getCurrentWalletAddress() async {
     return await storage.read(key: "main_wallet_address");
   }
-<<<<<<< HEAD
 }
-=======
-}
->>>>>>> bddd3d4 (Updated UI and Wallet Screen layout)
+

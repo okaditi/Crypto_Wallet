@@ -1,13 +1,5 @@
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
-// ignore: unused_import
->>>>>>> bddd3d4 (Updated UI and Wallet Screen layout)
-import 'hush_wallet_service.dart';
-=======
-import 'dart:convert';
 
->>>>>>> da31c38 (Switched UI layout + added wallet connection functions(partially))
+import 'hush_wallet_service.dart';
 import 'package:bip39/bip39.dart' as bip39;
 import 'package:bip32/bip32.dart' as bip32;
 import 'package:hex/hex.dart';
@@ -16,12 +8,9 @@ import 'package:http/http.dart' as http;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:walletconnect_dart/walletconnect_dart.dart';
 
-<<<<<<< HEAD
+
 //setting up dependencies/tools we will use throughout the service!!!
-=======
 
-
->>>>>>> da31c38 (Switched UI layout + added wallet connection functions(partially))
 class WalletService {
   final storage = FlutterSecureStorage(); //saves private key on the devices
   final String rpcUrl = "https://sepolia.infura.io/v3/235b57e865d249359ec1aebd2c620c39"; // Infura API- intracting w blockchain using etherum node url which in this case is infura, an ethereum provider and i fucking forgot mine so i have to ask bhaiya
@@ -144,9 +133,7 @@ class WalletService {
     return await ethClient.sendTransaction(credentials, transaction);
   }
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-  /// Self-destructs the main wallet and activates the backup HushWallet
+  
   Future<void> selfDestructWallet() async {
     print("Main wallet is being destroyed...");
     String? privateKey = await loadPrivateKey();
@@ -171,78 +158,4 @@ class WalletService {
     print("A new backup HushWallet has been created.");
   }
 
-=======
-  /// Fetches the ETH to USD conversion ratewith this coingecko API
-  Future<double> getEthToUsdRate() async {
-    final url = Uri.parse('https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=usd');
-    final response = await http.get(url);
-
-    if (response.statusCode == 200) {
-      final data = jsonDecode(response.body);
-      return data['ethereum']['usd'].toDouble();
-    } else {
-      throw Exception('Failed to fetch ETH price');
-    }
-  }
-
-  /// gets allthe  assets in the wallet 
-  Future<List<Map<String, String>>> getAllAssets(String address) async {
-    List<Map<String, String>> assets = [];
-
-    // Fetch ETH balance
-    EtherAmount ethBalance = await getBalance(address);
-    double ethValue = ethBalance.getValueInUnit(EtherUnit.ether);
-    double ethUsdValue = ethValue * await getEthToUsdRate();
-
-    assets.add({
-      'symbol': 'ETH',
-      'amount': ethValue.toStringAsFixed(4),
-      'usd': ethUsdValue.toStringAsFixed(2),
-    });
-
-    return assets;
-  }
-
-
->>>>>>> da31c38 (Switched UI layout + added wallet connection functions(partially))
 }
- // //This function just uses a CoinGecko API to get the USD value of ETH and put it on the app
-  // Future<double> getETHPriceInUSD() async {
-  // // Fetch ETH price from an API (e.g., CoinGecko)
-  // final response = await http.get(Uri.parse('https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=usd'));
-
-  // if (response.statusCode == 200) {
-  //   final data = jsonDecode(response.body);
-  //   return (data['ethereum']['usd'] as num).toDouble();
-  // } else {
-  //   throw Exception('Failed to fetch ETH price');
-  // }
-  // }
-=======
-/// Self-destructs the main wallet and activates the backup HushWallet
-   Future<void> selfDestructWallet() async {
-     print("Main wallet is being destroyed...");
-     String? privateKey = await loadPrivateKey();
-     String? backupAddress = await hushWalletService.getBackupWalletAddress();
- 
-     if (privateKey != null && backupAddress != null) {
-       print("Transferring funds to backup wallet before destruction...");
-       try {
-         EtherAmount balance = await getBalance(getEthereumAddress(privateKey));
-         await sendTransaction(privateKey, backupAddress, balance.getValueInUnit(EtherUnit.ether)); // Send all funds
-       } catch (e) {
-         print("Transfer failed: $e");
-       }
-     }
- 
-     await storage.delete(key: "private_key");
-     await storage.delete(key: "seed_phrase");
-     print("Main wallet has been wiped.");
-     await hushWalletService.activateHushWallet();
-     print("HushWallet is now the active wallet.");
-     await setupNewWallet();
-     print("A new backup HushWallet has been created.");
-   }  
-}
-
->>>>>>> bddd3d4 (Updated UI and Wallet Screen layout)

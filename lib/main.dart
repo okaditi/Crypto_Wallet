@@ -269,8 +269,6 @@ class SettingsScreen extends StatelessWidget {
 class WalletScreen extends StatefulWidget {
   final WalletService walletService;
   WalletScreen({required this.walletService});
-<<<<<<< HEAD
-=======
 
   @override
   _WalletScreenState createState() => _WalletScreenState();
@@ -296,45 +294,9 @@ class _WalletScreenState extends State<WalletScreen> {
 
         EtherAmount ethBalance = await widget.walletService.getBalance(address);
         double ethValue = ethBalance.getValueInUnit(EtherUnit.ether);
->>>>>>> bddd3d4 (Updated UI and Wallet Screen layout)
-
-  @override
-  _WalletScreenState createState() => _WalletScreenState();
-}
-
-<<<<<<< HEAD
-class _WalletScreenState extends State<WalletScreen> {
-  String balance = 'Fetching...';
-  String? walletAddress;
-  List<Map<String, String>> assets = [];
-
-  @override
-  void initState() {
-    super.initState();
-    _loadWalletData();
-  }
-
-  Future<void> _loadWalletData() async {
-    try {
-      String? privateKey = await widget.walletService.loadPrivateKey();
-      if (privateKey != null) {
-        String address = widget.walletService.getEthereumAddress(privateKey);
-        setState(() => walletAddress = address);
-
-        EtherAmount ethBalance = await widget.walletService.getBalance(address);
-        double ethValue = ethBalance.getValueInUnit(EtherUnit.ether);
-        double ethToUsd = await widget.walletService.getEthToUsdRate();
-        double ethUsdValue = ethValue * ethToUsd;
-
-        List<Map<String, String>> fetchedAssets = await widget.walletService.getAllAssets(address);
 
         setState(() {
           balance = ethValue.toStringAsFixed(4);
-          assets = fetchedAssets;
-=======
-        setState(() {
-          balance = ethValue.toStringAsFixed(4);
->>>>>>> bddd3d4 (Updated UI and Wallet Screen layout)
         });
       } else {
         setState(() => balance = 'No wallet found');
